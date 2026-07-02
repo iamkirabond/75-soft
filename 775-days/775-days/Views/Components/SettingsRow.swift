@@ -1,5 +1,6 @@
 import SwiftUI
 
+// MARK: - Settings Row (для обычных элементов)
 struct SettingsRow: View {
     let icon: String
     let title: String
@@ -13,9 +14,9 @@ struct SettingsRow: View {
         } label: {
             HStack(spacing: 14) {
                 Image(systemName: icon)
-                    .font(.system(size: 20))
+                    .font(.system(size: 18))
                     .foregroundColor(isDestructive ? .red : .gray)
-                    .frame(width: 28)
+                    .frame(width: 24)
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
@@ -37,12 +38,12 @@ struct SettingsRow: View {
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
             .background(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: 14)
                     .fill(Color.white)
                     .shadow(color: Color.black.opacity(0.03), radius: 4, x: 0, y: 2)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: 14)
                     .stroke(Color.gray.opacity(0.06), lineWidth: 1)
             )
         }

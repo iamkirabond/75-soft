@@ -141,4 +141,8 @@ class AppViewModel {
         let completed = state.habits.filter { $0.isCompleted }.count
         return Double(completed) / Double(state.habits.count)
     }
+    // MARK: - Save
+    func saveUpdates() {
+        storage.save(state)
+    }
 }
