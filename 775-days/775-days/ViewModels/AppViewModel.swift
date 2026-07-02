@@ -183,4 +183,15 @@ class AppViewModel {
         state.habits.append(newHabit)
         save()
     }
+    
+    // MARK: - Edit habit
+    func editHabit(_ habit: Habit, newTitle: String, newIcon: String, newColor: String) {
+        guard let index = state.habits.firstIndex(where: { $0.id == habit.id }) else { return }
+        
+        state.habits[index].title = newTitle
+        state.habits[index].icon = newIcon
+        state.habits[index].color = newColor
+        
+        save()
+    }
 }

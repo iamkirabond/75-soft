@@ -4,6 +4,7 @@ struct HabitCardView: View {
     let habit: Habit
     let isLocked: Bool
     let action: () -> Void
+    let onEdit: () -> Void   // 👈 параметр для редактирования
     
     // Конвертируем строку в Color
     private var habitColor: Color {
@@ -43,7 +44,7 @@ struct HabitCardView: View {
                     .foregroundColor(textColor)
                     .strikethrough(habit.isCompleted && isLocked, color: .gray)
                 
-                // Подпись для дефолтных привычек (75 Soft)
+                // Подпись для дефолтных привычек
                 if habit.isDefault {
                     Text(habitSubtitle(for: habit.title))
                         .font(.caption)
@@ -85,6 +86,11 @@ struct HabitCardView: View {
                 action()
             }
         }
+        .onLongPressGesture(minimumDuration: 0.5) {
+            if !isLocked {
+                onEdit()   // 👈 вызываем редактирование
+            }
+        }
     }
     
     // MARK: - Colors
@@ -121,19 +127,15 @@ struct HabitCardView: View {
         HabitCardView(
             habit: Habit(title: "Move your body", isCompleted: false, isDefault: true, icon: "figure.walk", color: "orange"),
             isLocked: false,
-            action: {}
+            action: {},
+            onEdit: {}
         )
         
         HabitCardView(
             habit: Habit(title: "Drink water", isCompleted: true, isDefault: true, icon: "drop", color: "blue"),
             isLocked: false,
-            action: {}
-        )
-        
-        HabitCardView(
-            habit: Habit(title: "Read", isCompleted: false, isDefault: true, icon: "book", color: "purple"),
-            isLocked: false,
-            action: {}
+            action: {},
+            onEdit: {}
         )
     }
     .padding()

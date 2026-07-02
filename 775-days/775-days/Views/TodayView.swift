@@ -3,6 +3,8 @@ import SwiftUI
 struct TodayView: View {
     @Bindable var vm: AppViewModel
     @Binding var showAdd: Bool
+    @State private var habitToEdit: Habit?
+    @State private var showingEditSheet = false
 
     var body: some View {
         ZStack {
@@ -120,22 +122,21 @@ struct TodayView: View {
                         ForEach(vm.state.habits) { habit in
                             HabitCardView(
                                 habit: habit,
-                                isLocked: vm.state.isDayLocked
-                            ) {
-                                vm.toggleHabit(habit)
-                            }
+                                isLocked: vm.state.isDayLocked,
+                                action: {
+                                    vm.toggleHabit(habit)
+                                },
+                                onEdit: {
+                                    habitToEdit = habit
+                                    showingEditSheet = true
+                                }
+                            )
                             #if os(iOS)
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                 Button(role: .destructive) {
-                                    vm.removeHabit(habit)
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-                            }
-                            #elseif os(macOS)
-                            .contextMenu {
-                                Button(role: .destructive) {
-                                    vm.removeHabit(habit)
+                                    withAnimation {
+                                        vm.removeHabit(habit)
+                                    }
                                 } label: {
                                     Label("Delete", systemImage: "trash")
                                 }
@@ -185,13 +186,17 @@ struct TodayView: View {
                     }
                     .padding(.horizontal)
                     
-                    // Добавляем дополнительное пространство внизу для скролла
                     Spacer()
                         .frame(height: 100)
                 }
             }
-            // Важно: ScrollView должен занимать всю доступную область
-            .scrollIndicators(.visible) // Показываем индикатор скролла для наглядности
+        }
+        .sheet(isPresented: $showingEditSheet) {
+            if let habit = habitToEdit {
+                EditHabitView(habit: habit) { newTitle, newIcon, newColor in
+                    vm.editHabit(habit, newTitle: newTitle, newIcon: newIcon, newColor: newColor)
+                }
+            }
         }
     }
     
@@ -213,9 +218,4 @@ struct TodayView: View {
         formatter.dateFormat = "EEEE, d MMMM"
         return formatter.string(from: Date())
     }
-}
-
-// MARK: - Preview
-#Preview {
-    TodayView(vm: AppViewModel(), showAdd: .constant(false))
 }
