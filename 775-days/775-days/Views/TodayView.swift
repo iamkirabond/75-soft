@@ -6,7 +6,6 @@ struct TodayView: View {
 
     var body: some View {
         ZStack {
-            // Мягкий бежевый/кремовый фон
             Color(red: 0.98, green: 0.97, blue: 0.94)
                 .ignoresSafeArea()
 
@@ -27,7 +26,7 @@ struct TodayView: View {
                     .padding(.horizontal)
                     .padding(.top, 44)
                     
-                    // MARK: - Soft Challenge Card (белая плашка)
+                    // MARK: - Soft Challenge Card
                     VStack(alignment: .leading, spacing: 10) {
                         Text("SOFT CHALLENGE")
                             .font(.caption)
@@ -60,7 +59,7 @@ struct TodayView: View {
                             }
                         }
                         
-                        // Прогресс-бар (как на картинке)
+                        // Прогресс-бар дня
                         if vm.state.habits.count > 0 {
                             GeometryReader { geometry in
                                 ZStack(alignment: .leading) {
@@ -110,6 +109,11 @@ struct TodayView: View {
                             .foregroundColor(.gray)
                             .padding(.horizontal)
                     }
+                    
+                    // MARK: - Разделитель
+                    Divider()
+                        .padding(.horizontal)
+                        .padding(.vertical, 4)
                     
                     // MARK: - Список привычек
                     VStack(spacing: 12) {
@@ -181,10 +185,13 @@ struct TodayView: View {
                     }
                     .padding(.horizontal)
                     
+                    // Добавляем дополнительное пространство внизу для скролла
                     Spacer()
-                        .frame(height: 30)
+                        .frame(height: 100)
                 }
             }
+            // Важно: ScrollView должен занимать всю доступную область
+            .scrollIndicators(.visible) // Показываем индикатор скролла для наглядности
         }
     }
     

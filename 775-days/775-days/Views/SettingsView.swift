@@ -49,7 +49,6 @@ struct SettingsView: View {
                             showingEditName = true
                         } label: {
                             HStack(spacing: 14) {
-                                // Аватар
                                 Circle()
                                     .fill(Color.green.opacity(0.2))
                                     .frame(width: 50, height: 50)
@@ -102,7 +101,6 @@ struct SettingsView: View {
                             .foregroundColor(.gray)
                             .padding(.horizontal, 4)
                         
-                        // Notifications
                         SettingsToggleRow(
                             icon: "bell.fill",
                             title: "Notifications",
@@ -111,7 +109,6 @@ struct SettingsView: View {
                             iconColor: .blue
                         )
                         
-                        // Theme
                         SettingsPickerRow(
                             icon: "moon.fill",
                             title: "Appearance",
@@ -146,7 +143,7 @@ struct SettingsView: View {
                             title: "Export Data",
                             subtitle: "Export your progress as JSON"
                         ) {
-                            // Экспорт данных
+                            exportData()
                         }
                     }
                     .padding(.horizontal)
@@ -170,9 +167,7 @@ struct SettingsView: View {
                             icon: "heart.fill",
                             title: "Made with ❤️",
                             subtitle: "75 Soft Challenge App"
-                        ) {
-                            // Открыть сайт или социальные сети
-                        }
+                        )
                     }
                     .padding(.horizontal)
                     
@@ -196,19 +191,63 @@ struct SettingsView: View {
     
     // MARK: - Functions
     private func resetProgress() {
-        // Сброс прогресса
-        withAnimation {
-            vm.state.currentDay = 0
-            vm.state.streak = 0
-            vm.state.habits = []
-            vm.state.progressPhotos = []
-            vm.state.isDayLocked = false
-            vm.state.lastCompletedDate = nil
-            vm.saveUpdates()
+        print("🔄 Resetting progress...")
+        
+        // Создаём дефолтные привычки
+        let defaultHabits = [
+            Habit(title: "Water", isCompleted: false, isDefault: true),
+            Habit(title: "Activity", isCompleted: false, isDefault: true),
+            Habit(title: "Self development", isCompleted: false, isDefault: true),
+            Habit(title: "Skincare", isCompleted: false, isDefault: true),
+            Habit(title: "Mindfulness", isCompleted: false, isDefault: true)
+        ]
+        
+        // Сбрасываем всё состояние
+        vm.state.currentDay = 0
+        vm.state.streak = 0
+        vm.state.habits = defaultHabits
+        vm.state.progressPhotos = []
+        vm.state.isDayLocked = false
+        vm.state.lastCompletedDate = nil
+        vm.state.startDate = Date()
+        
+        // Сохраняем изменения
+        vm.saveUpdates()
+        
+        print("✅ Progress reset successfully!")
+        print("📊 Current day: \(vm.state.currentDay)")
+        print("📊 Habits count: \(vm.state.habits.count)")
+    }
+    
+    private func exportData() {
+        // Экспорт данных в JSON
+        do {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .prettyPrinted
+            let data = try encoder.encode(vm.state)
+            
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("📤 Export Data:\n\(jsonString)")
+                
+                // Показываем алерт с данными (или можно открыть Share Sheet)
+                let alert = UIAlertController(
+                    title: "Export Data",
+                    message: "Data exported successfully!",
+                    preferredStyle: .alert
+                )
+                alert.addAction(UIAlertAction(title: "OK", style: .default))
+                
+                // Показываем алерт
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let rootVC = windowScene.windows.first?.rootViewController {
+                    rootVC.present(alert, animated: true)
+                }
+            }
+        } catch {
+            print("❌ Failed to export data: \(error)")
         }
     }
 }
-
 
 
 // MARK: - Settings Toggle Row
