@@ -216,12 +216,43 @@ struct SettingsView: View {
     private func resetProgress() {
         print("🔄 Resetting progress...")
         
+        // 75 Soft Challenge дефолтные привычки
         let defaultHabits = [
-            Habit(title: "Water", isCompleted: false, isDefault: true, icon: "drop", color: "blue"),
-            Habit(title: "Activity", isCompleted: false, isDefault: true, icon: "dumbbell", color: "orange"),
-            Habit(title: "Self development", isCompleted: false, isDefault: true, icon: "book", color: "purple"),
-            Habit(title: "Skincare", isCompleted: false, isDefault: true, icon: "sparkles", color: "pink"),
-            Habit(title: "Mindfulness", isCompleted: false, isDefault: true, icon: "brain", color: "teal")
+            Habit(
+                title: "Move your body",
+                isCompleted: false,
+                isDefault: true,
+                icon: "figure.walk",
+                color: "orange"
+            ),
+            Habit(
+                title: "Drink water",
+                isCompleted: false,
+                isDefault: true,
+                icon: "drop",
+                color: "blue"
+            ),
+            Habit(
+                title: "Read",
+                isCompleted: false,
+                isDefault: true,
+                icon: "book",
+                color: "purple"
+            ),
+            Habit(
+                title: "Healthy eating",
+                isCompleted: false,
+                isDefault: true,
+                icon: "leaf",
+                color: "green"
+            ),
+            Habit(
+                title: "Progress photo",
+                isCompleted: false,
+                isDefault: true,
+                icon: "camera",
+                color: "pink"
+            )
         ]
         
         vm.state.currentDay = 0

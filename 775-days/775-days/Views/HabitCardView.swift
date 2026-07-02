@@ -43,7 +43,7 @@ struct HabitCardView: View {
                     .foregroundColor(textColor)
                     .strikethrough(habit.isCompleted && isLocked, color: .gray)
                 
-                // Подпись для дефолтных привычек
+                // Подпись для дефолтных привычек (75 Soft)
                 if habit.isDefault {
                     Text(habitSubtitle(for: habit.title))
                         .font(.caption)
@@ -96,19 +96,19 @@ struct HabitCardView: View {
         }
     }
     
-    // MARK: - Helpers
+    // MARK: - Helpers (75 Soft подписи)
     private func habitSubtitle(for title: String) -> String {
         switch title {
-        case "Water":
-            return "Six glasses through the day"
-        case "Activity":
+        case "Move your body":
             return "A 20-minute walk counts"
-        case "Self development":
-            return "Five pages — fiction is fine"
-        case "Skincare":
-            return "A little care goes a long way"
-        case "Mindfulness":
-            return "Five minutes just for you"
+        case "Drink water":
+            return "Six glasses through the day"
+        case "Read":
+            return "Ten pages — fiction is fine"
+        case "Healthy eating":
+            return "Eat well, feel well"
+        case "Progress photo":
+            return "Today's gentle snapshot"
         default:
             return ""
         }
@@ -119,20 +119,20 @@ struct HabitCardView: View {
 #Preview {
     VStack(spacing: 12) {
         HabitCardView(
-            habit: Habit(title: "Water", isCompleted: false, isDefault: true, icon: "drop", color: "blue"),
+            habit: Habit(title: "Move your body", isCompleted: false, isDefault: true, icon: "figure.walk", color: "orange"),
             isLocked: false,
             action: {}
         )
         
         HabitCardView(
-            habit: Habit(title: "Morning Meditation", isCompleted: true, isDefault: false, icon: "sparkles", color: "purple"),
+            habit: Habit(title: "Drink water", isCompleted: true, isDefault: true, icon: "drop", color: "blue"),
             isLocked: false,
             action: {}
         )
         
         HabitCardView(
-            habit: Habit(title: "Exercise", isCompleted: true, isDefault: true, icon: "dumbbell", color: "orange"),
-            isLocked: true,
+            habit: Habit(title: "Read", isCompleted: false, isDefault: true, icon: "book", color: "purple"),
+            isLocked: false,
             action: {}
         )
     }

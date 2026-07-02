@@ -1,11 +1,6 @@
 import Observation
 import Foundation
 import SwiftUI
-#if os(iOS)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
 
 @Observable
 class AppViewModel {
@@ -23,11 +18,41 @@ class AppViewModel {
     private func setupDefaultsIfNeeded() {
         if state.habits.isEmpty {
             state.habits = [
-                Habit(title: "Water", isCompleted: false, isDefault: true),
-                Habit(title: "Activity", isCompleted: false, isDefault: true),
-                Habit(title: "Self development", isCompleted: false, isDefault: true),
-                Habit(title: "Skincare", isCompleted: false, isDefault: true),
-                Habit(title: "Mindfulness", isCompleted: false, isDefault: true)
+                Habit(
+                    title: "Move your body",
+                    isCompleted: false,
+                    isDefault: true,
+                    icon: "figure.walk",
+                    color: "orange"
+                ),
+                Habit(
+                    title: "Drink water",
+                    isCompleted: false,
+                    isDefault: true,
+                    icon: "drop",
+                    color: "blue"
+                ),
+                Habit(
+                    title: "Read",
+                    isCompleted: false,
+                    isDefault: true,
+                    icon: "book",
+                    color: "purple"
+                ),
+                Habit(
+                    title: "Healthy eating",
+                    isCompleted: false,
+                    isDefault: true,
+                    icon: "leaf",
+                    color: "green"
+                ),
+                Habit(
+                    title: "Progress photo",
+                    isCompleted: false,
+                    isDefault: true,
+                    icon: "camera",
+                    color: "pink"
+                )
             ]
             save()
         }
