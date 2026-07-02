@@ -1,14 +1,6 @@
 import SwiftUI
 import PhotosUI
 
-#if os(iOS)
-import UIKit
-typealias PlatformImage = UIImage
-#elseif os(macOS)
-import AppKit
-typealias PlatformImage = NSImage
-#endif
-
 struct PhotosView: View {
     let vm: AppViewModel
     
@@ -70,20 +62,11 @@ struct PhotosView: View {
                     .onChange(of: selectedItem) { _ in
                         Task {
                             if let newValue = selectedItem,
-                               let data = try? await newValue.loadTransferable(type: Data.self) {
-                                #if os(iOS)
-                                if let image = UIImage(data: data) {
-                                    await MainActor.run {
-                                        vm.addPhoto(image)
-                                    }
+                               let data = try? await newValue.loadTransferable(type: Data.self),
+                               let image = UIImage(data: data) {
+                                await MainActor.run {
+                                    vm.addPhoto(image)
                                 }
-                                #elseif os(macOS)
-                                if let image = NSImage(data: data) {
-                                    await MainActor.run {
-                                        vm.addPhoto(image)
-                                    }
-                                }
-                                #endif
                             }
                             await MainActor.run {
                                 selectedItem = nil
@@ -113,6 +96,8 @@ struct PhotosView: View {
                         }
                         .frame(maxWidth: .infinity)
                     } else {
+                        let sortedPhotos = vm.state.progressPhotos.sorted { $0.date > $1.date }
+                        
                         LazyVGrid(
                             columns: [
                                 GridItem(.flexible(), spacing: 12),
@@ -121,7 +106,7 @@ struct PhotosView: View {
                             ],
                             spacing: 12
                         ) {
-                            ForEach(vm.state.progressPhotos.sorted(by: { $0.date > $1.date })) { photo in
+                            ForEach(sortedPhotos) { photo in
                                 if let image = vm.getPhotoImage(photo) {
                                     PhotoGridItem(
                                         image: image,
@@ -158,6 +143,14 @@ struct PhotosView: View {
                     day: photo.day,
                     date: photo.date
                 )
+            } else {
+                // Если фото не загрузилось, показываем заглушку
+                Color.black
+                    .ignoresSafeArea()
+                    .overlay(
+                        Text("Image not found")
+                            .foregroundColor(.white)
+                    )
             }
         }
     }
@@ -165,27 +158,18 @@ struct PhotosView: View {
 
 // MARK: - Photo Grid Item
 struct PhotoGridItem: View {
-    let image: PlatformImage
+    let image: UIImage
     let day: Int
     let date: Date
     
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            #if os(iOS)
             Image(uiImage: image)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
-                .frame(height: 120)
-                .cornerRadius(12)
+                .frame(width: UIScreen.main.bounds.width / 3 - 20, height: 120)
                 .clipped()
-            #elseif os(macOS)
-            Image(nsImage: image)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(height: 120)
                 .cornerRadius(12)
-                .clipped()
-            #endif
             
             HStack {
                 Text("Day \(day)")
@@ -199,6 +183,7 @@ struct PhotoGridItem: View {
                     .font(.caption2)
                     .foregroundColor(.gray)
             }
+            .padding(.horizontal, 4)
         }
         .padding(8)
         .background(
@@ -215,17 +200,18 @@ struct PhotoGridItem: View {
 
 // MARK: - Full Screen Photo View
 struct FullScreenPhotoView: View {
-    let image: PlatformImage
+    let image: UIImage
     let day: Int
     let date: Date
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack {
             Color.black
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
+                // Верхняя панель с информацией
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Day \(day)")
@@ -252,17 +238,12 @@ struct FullScreenPhotoView: View {
                 
                 Spacer()
                 
-                #if os(iOS)
+                // Фото
                 Image(uiImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                #elseif os(macOS)
-                Image(nsImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                #endif
+                    .background(Color.black)
                 
                 Spacer()
             }
