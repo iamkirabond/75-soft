@@ -90,8 +90,8 @@ struct MainView: View {
             #endif
         }
         .sheet(isPresented: $showAdd) {
-            AddHabitView { title in
-                vm.addHabit(title: title)
+            AddHabitView { title, icon, color in
+                vm.addHabit(title: title, icon: icon, color: color)
             }
         }
     }

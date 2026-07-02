@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AddHabitView: View {
     @Environment(\.dismiss) var dismiss
-    let onSave: (String) -> Void
+    let onSave: (String, String, String) -> Void  // 👈 изменено: (title, icon, color)
     
     @State private var title = ""
     @State private var selectedIcon = "star"
@@ -23,6 +23,23 @@ struct AddHabitView: View {
         .teal, .mint, .indigo, .yellow
     ]
     
+    // Конвертируем Color в строку для сохранения
+    private func colorToString(_ color: Color) -> String {
+        switch color {
+        case .blue: return "blue"
+        case .green: return "green"
+        case .orange: return "orange"
+        case .red: return "red"
+        case .purple: return "purple"
+        case .pink: return "pink"
+        case .teal: return "teal"
+        case .mint: return "mint"
+        case .indigo: return "indigo"
+        case .yellow: return "yellow"
+        default: return "blue"
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -36,7 +53,7 @@ struct AddHabitView: View {
                         VStack(spacing: 16) {
                             // Круг с иконкой
                             Button {
-                                showingIconPicker = true
+                                showingIconPicker.toggle()
                             } label: {
                                 ZStack {
                                     Circle()
@@ -50,7 +67,7 @@ struct AddHabitView: View {
                             }
                             .buttonStyle(PlainButtonStyle())
                             
-                            Text("Tap icon to change")
+                            Text(showingIconPicker ? "Choose an icon" : "Tap icon to change")
                                 .font(.caption)
                                 .foregroundColor(.gray)
                         }
@@ -178,7 +195,8 @@ struct AddHabitView: View {
                         // MARK: - Кнопка сохранения
                         Button {
                             if !title.isEmpty {
-                                onSave(title)
+                                let colorString = colorToString(selectedColor)
+                                onSave(title, selectedIcon, colorString)  // 👈 передаём 3 аргумента
                                 dismiss()
                             }
                         } label: {
@@ -220,7 +238,7 @@ struct AddHabitView: View {
 
 // MARK: - Preview
 #Preview {
-    AddHabitView { title in
-        print("Added habit: \(title)")
+    AddHabitView { title, icon, color in
+        print("Added habit: \(title) with icon: \(icon) and color: \(color)")
     }
 }

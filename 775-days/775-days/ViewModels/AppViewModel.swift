@@ -145,4 +145,17 @@ class AppViewModel {
     func saveUpdates() {
         storage.save(state)
     }
+    // MARK: - Habit logic
+    func addHabit(title: String, icon: String = "circle", color: String = "blue") {
+        let newHabit = Habit(
+            title: title,
+            isCompleted: false,
+            isDefault: false,
+            icon: icon,
+            color: color
+        )
+        state.isDayLocked = false
+        state.habits.append(newHabit)
+        save()
+    }
 }

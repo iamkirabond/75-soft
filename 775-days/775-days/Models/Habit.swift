@@ -1,15 +1,18 @@
 import Foundation
 
-struct Habit: Identifiable, Codable {
-    let id: UUID
-    var title: String
-    var isDefault: Bool
+struct Habit: Identifiable, Codable, Equatable {
+    let id = UUID()
+    let title: String
     var isCompleted: Bool
-
-    init(title: String, isCompleted: Bool = false, isDefault: Bool ) {
-        self.id = UUID()
+    let isDefault: Bool
+    var icon: String = "circle"      // 👈 добавляем иконку
+    var color: String = "blue"       // 👈 добавляем цвет (храним как строку)
+    
+    init(title: String, isCompleted: Bool = false, isDefault: Bool, icon: String = "circle", color: String = "blue") {
         self.title = title
-        self.isDefault = isDefault
         self.isCompleted = isCompleted
+        self.isDefault = isDefault
+        self.icon = icon
+        self.color = color
     }
 }

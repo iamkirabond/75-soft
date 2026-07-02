@@ -4,29 +4,36 @@ struct HabitCardView: View {
     let habit: Habit
     let isLocked: Bool
     let action: () -> Void
-
+    
+    // Конвертируем строку в Color
+    private var habitColor: Color {
+        switch habit.color {
+        case "blue": return .blue
+        case "green": return .green
+        case "orange": return .orange
+        case "red": return .red
+        case "purple": return .purple
+        case "pink": return .pink
+        case "teal": return .teal
+        case "mint": return .mint
+        case "indigo": return .indigo
+        case "yellow": return .yellow
+        default: return .blue
+        }
+    }
+    
     var body: some View {
         HStack(alignment: .center, spacing: 14) {
-            // Круглый чекбокс
-            Button {
-                if !isLocked {
-                    action()
-                }
-            } label: {
-                ZStack {
+            // Иконка привычки
+            Image(systemName: habit.icon)
+                .font(.system(size: 18))
+                .foregroundColor(habit.isCompleted ? .green : habitColor)
+                .frame(width: 28, height: 28)
+                .background(
                     Circle()
-                        .fill(checkboxBackgroundColor)
-                        .frame(width: 28, height: 28)
-                    
-                    if habit.isCompleted {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(.white)
-                    }
-                }
-            }
-            .disabled(isLocked)
-            .buttonStyle(PlainButtonStyle())
+                        .fill(habit.isCompleted ? Color.green.opacity(0.15) : habitColor.opacity(0.15))
+                        .frame(width: 36, height: 36)
+                )
             
             // Текст привычки
             VStack(alignment: .leading, spacing: 3) {
@@ -45,8 +52,23 @@ struct HabitCardView: View {
             }
             
             Spacer()
+            
+            // Статус выполнения (галочка или круг)
+            if habit.isCompleted {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 22))
+                    .foregroundColor(.green)
+            } else if isLocked {
+                Image(systemName: "circle")
+                    .font(.system(size: 22))
+                    .foregroundColor(.gray.opacity(0.3))
+            } else {
+                Image(systemName: "circle")
+                    .font(.system(size: 22))
+                    .foregroundColor(habitColor.opacity(0.4))
+            }
         }
-        .padding(.vertical, 14)
+        .padding(.vertical, 12)
         .padding(.horizontal, 16)
         .background(
             RoundedRectangle(cornerRadius: 14)
@@ -55,7 +77,7 @@ struct HabitCardView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 14)
-                .stroke(Color.gray.opacity(0.06), lineWidth: 1)
+                .stroke(habit.isCompleted && !isLocked ? Color.green.opacity(0.3) : Color.gray.opacity(0.06), lineWidth: 1)
         )
         .contentShape(Rectangle())
         .onTapGesture {
@@ -66,16 +88,6 @@ struct HabitCardView: View {
     }
     
     // MARK: - Colors
-    var checkboxBackgroundColor: Color {
-        if habit.isCompleted {
-            return Color.green
-        } else if isLocked {
-            return Color.gray.opacity(0.2)
-        } else {
-            return Color.gray.opacity(0.12)
-        }
-    }
-    
     var textColor: Color {
         if isLocked {
             return habit.isCompleted ? .gray.opacity(0.5) : .gray.opacity(0.6)
@@ -101,4 +113,30 @@ struct HabitCardView: View {
             return ""
         }
     }
+}
+
+// MARK: - Preview
+#Preview {
+    VStack(spacing: 12) {
+        HabitCardView(
+            habit: Habit(title: "Water", isCompleted: false, isDefault: true, icon: "drop", color: "blue"),
+            isLocked: false,
+            action: {}
+        )
+        
+        HabitCardView(
+            habit: Habit(title: "Morning Meditation", isCompleted: true, isDefault: false, icon: "sparkles", color: "purple"),
+            isLocked: false,
+            action: {}
+        )
+        
+        HabitCardView(
+            habit: Habit(title: "Exercise", isCompleted: true, isDefault: true, icon: "dumbbell", color: "orange"),
+            isLocked: true,
+            action: {}
+        )
+    }
+    .padding()
+    .background(Color(red: 0.98, green: 0.97, blue: 0.94))
+    .previewLayout(.sizeThatFits)
 }
