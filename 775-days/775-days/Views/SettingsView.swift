@@ -3,7 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     let vm: AppViewModel
     @State private var showingResetAlert = false
-    @State private var userName: String = "User"
+    @State private var userName: String = ""
     @State private var notificationsEnabled: Bool = true
     @State private var selectedTheme: Theme = .system
     @State private var showingEditName = false
@@ -12,6 +12,19 @@ struct SettingsView: View {
         case light = "Light"
         case dark = "Dark"
         case system = "System"
+    }
+    
+    // UserDefaults ключи
+    private let userNameKey = "userName"
+    private let notificationsKey = "notificationsEnabled"
+    private let themeKey = "selectedTheme"
+    
+    init(vm: AppViewModel) {
+        self.vm = vm
+        // Загружаем сохранённые настройки
+        _userName = State(initialValue: UserDefaults.standard.string(forKey: userNameKey) ?? "User")
+        _notificationsEnabled = State(initialValue: UserDefaults.standard.bool(forKey: notificationsKey))
+        _selectedTheme = State(initialValue: Theme(rawValue: UserDefaults.standard.string(forKey: themeKey) ?? Theme.system.rawValue) ?? .system)
     }
     
     var body: some View {
@@ -108,6 +121,9 @@ struct SettingsView: View {
                             isOn: $notificationsEnabled,
                             iconColor: .blue
                         )
+                        .onChange(of: notificationsEnabled) { _, newValue in
+                            UserDefaults.standard.set(newValue, forKey: notificationsKey)
+                        }
                         
                         SettingsPickerRow(
                             icon: "moon.fill",
@@ -117,6 +133,10 @@ struct SettingsView: View {
                             selectedOption: $selectedTheme,
                             iconColor: .purple
                         )
+                        .onChange(of: selectedTheme) { _, newValue in
+                            UserDefaults.standard.set(newValue.rawValue, forKey: themeKey)
+                            applyTheme(newValue)
+                        }
                     }
                     .padding(.horizontal)
                     
@@ -185,7 +205,10 @@ struct SettingsView: View {
             Text("Are you sure you want to reset all your progress? This action cannot be undone.")
         }
         .sheet(isPresented: $showingEditName) {
-            EditNameView(userName: $userName)
+            EditNameView(userName: $userName) { newName in
+                // Сохраняем имя при изменении
+                UserDefaults.standard.set(newName, forKey: userNameKey)
+            }
         }
     }
     
@@ -193,16 +216,14 @@ struct SettingsView: View {
     private func resetProgress() {
         print("🔄 Resetting progress...")
         
-        // Создаём дефолтные привычки
         let defaultHabits = [
-            Habit(title: "Water", isCompleted: false, isDefault: true),
-            Habit(title: "Activity", isCompleted: false, isDefault: true),
-            Habit(title: "Self development", isCompleted: false, isDefault: true),
-            Habit(title: "Skincare", isCompleted: false, isDefault: true),
-            Habit(title: "Mindfulness", isCompleted: false, isDefault: true)
+            Habit(title: "Water", isCompleted: false, isDefault: true, icon: "drop", color: "blue"),
+            Habit(title: "Activity", isCompleted: false, isDefault: true, icon: "dumbbell", color: "orange"),
+            Habit(title: "Self development", isCompleted: false, isDefault: true, icon: "book", color: "purple"),
+            Habit(title: "Skincare", isCompleted: false, isDefault: true, icon: "sparkles", color: "pink"),
+            Habit(title: "Mindfulness", isCompleted: false, isDefault: true, icon: "brain", color: "teal")
         ]
         
-        // Сбрасываем всё состояние
         vm.state.currentDay = 0
         vm.state.streak = 0
         vm.state.habits = defaultHabits
@@ -211,16 +232,12 @@ struct SettingsView: View {
         vm.state.lastCompletedDate = nil
         vm.state.startDate = Date()
         
-        // Сохраняем изменения
         vm.saveUpdates()
         
         print("✅ Progress reset successfully!")
-        print("📊 Current day: \(vm.state.currentDay)")
-        print("📊 Habits count: \(vm.state.habits.count)")
     }
     
     private func exportData() {
-        // Экспорт данных в JSON
         do {
             let encoder = JSONEncoder()
             encoder.outputFormatting = .prettyPrinted
@@ -229,26 +246,130 @@ struct SettingsView: View {
             if let jsonString = String(data: data, encoding: .utf8) {
                 print("📤 Export Data:\n\(jsonString)")
                 
-                // Показываем алерт с данными (или можно открыть Share Sheet)
+                #if os(iOS)
                 let alert = UIAlertController(
                     title: "Export Data",
-                    message: "Data exported successfully!",
+                    message: "Data exported successfully! Check console for JSON.",
                     preferredStyle: .alert
                 )
                 alert.addAction(UIAlertAction(title: "OK", style: .default))
                 
-                // Показываем алерт
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                    let rootVC = windowScene.windows.first?.rootViewController {
                     rootVC.present(alert, animated: true)
                 }
+                #endif
             }
         } catch {
             print("❌ Failed to export data: \(error)")
         }
     }
+    
+    private func applyTheme(_ theme: Theme) {
+        // Здесь можно применить тему
+        // Для iOS 15+ можно использовать .preferredColorScheme()
+        print("🎨 Theme changed to: \(theme.rawValue)")
+    }
 }
 
+// MARK: - Edit Name View
+struct EditNameView: View {
+    @Binding var userName: String
+    let onSave: (String) -> Void
+    @Environment(\.dismiss) var dismiss
+    @State private var tempName: String = ""
+    
+    init(userName: Binding<String>, onSave: @escaping (String) -> Void) {
+        self._userName = userName
+        self.onSave = onSave
+        self._tempName = State(initialValue: userName.wrappedValue)
+    }
+    
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Enter your name", text: $tempName)
+                        .textFieldStyle(.roundedBorder)
+                        .padding(.vertical, 8)
+                } footer: {
+                    Text("This name will be displayed in your profile")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
+            }
+            .navigationTitle("Edit Name")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        let trimmedName = tempName.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !trimmedName.isEmpty {
+                            userName = trimmedName
+                            onSave(trimmedName)
+                            dismiss()
+                        }
+                    }
+                    .disabled(tempName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Settings Row
+struct SettingsRow: View {
+    let icon: String
+    let title: String
+    let subtitle: String
+    var isDestructive: Bool = false
+    var action: (() -> Void)? = nil
+    
+    var body: some View {
+        Button {
+            action?()
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: icon)
+                    .font(.system(size: 18))
+                    .foregroundColor(isDestructive ? .red : .gray)
+                    .frame(width: 24)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.headline)
+                        .fontWeight(.medium)
+                        .foregroundColor(isDestructive ? .red : .primary)
+                    
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(.gray.opacity(0.5))
+            }
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.white)
+                    .shadow(color: Color.black.opacity(0.03), radius: 4, x: 0, y: 2)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color.gray.opacity(0.06), lineWidth: 1)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
 
 // MARK: - Settings Toggle Row
 struct SettingsToggleRow: View {
@@ -347,44 +468,7 @@ struct SettingsPickerRow: View {
     }
 }
 
-// MARK: - Edit Name View
-struct EditNameView: View {
-    @Binding var userName: String
-    @Environment(\.dismiss) var dismiss
-    @State private var tempName: String = ""
-    
-    init(userName: Binding<String>) {
-        self._userName = userName
-        self._tempName = State(initialValue: userName.wrappedValue)
-    }
-    
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    TextField("Enter your name", text: $tempName)
-                        .textFieldStyle(.roundedBorder)
-                        .padding(.vertical, 8)
-                } footer: {
-                    Text("This name will be displayed in your profile")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                }
-            }
-            .navigationTitle("Edit Name")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        userName = tempName
-                        dismiss()
-                    }
-                    .disabled(tempName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-            }
-        }
-    }
+// MARK: - Preview
+#Preview {
+    SettingsView(vm: AppViewModel())
 }
